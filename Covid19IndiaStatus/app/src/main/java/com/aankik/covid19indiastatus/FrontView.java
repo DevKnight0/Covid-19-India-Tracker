@@ -1,6 +1,9 @@
 package com.aankik.covid19indiastatus;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +23,7 @@ import java.util.List;
 public class FrontView extends AppCompatActivity  implements ExtractJsonData.OnDataAvaialabe{
 
     private List<StateDataModel> stateDataModels;
-
+    boolean flag=false;
     TextView indiaConfirmed, indiaActive, indiaDeceased, indiaNewConfirmed,
             indiaNewRecovered, indiaNewDeceased, indiaRecovered,indiaNewActice;
 
@@ -28,19 +31,33 @@ public class FrontView extends AppCompatActivity  implements ExtractJsonData.OnD
     @Override
     protected void onResume() {
         super.onResume();
-        ExtractJsonData extractJsonData= new ExtractJsonData(this);
-        extractJsonData.execute("https://api.covid19india.org/data.json");
-
+        if(isOnline()) {
+            ExtractJsonData extractJsonData = new ExtractJsonData(this);
+            extractJsonData.execute("https://api.covid19india.org/data.json");
+        }
+        else {
+            Toast.makeText(this,"No Internet",Toast.LENGTH_LONG).show();
+        }
         stateData.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(flag){
                 Intent intent=new Intent(v.getContext(), PerStateDataList.class);
                 intent.putExtra("stateDataModels", (Serializable) stateDataModels);
-                startActivity(intent);
+                startActivity(intent);}
+                else{
+                    Toast.makeText(FrontView.this,"No Internet",Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
 
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
 
 
     @Override
@@ -62,6 +79,7 @@ public class FrontView extends AppCompatActivity  implements ExtractJsonData.OnD
         indiaNewActice= findViewById(R.id.India_active_new_textView);
         stateData= findViewById(R.id.state_data);
 
+        flag=false;
 
     }
 
@@ -102,7 +120,7 @@ public class FrontView extends AppCompatActivity  implements ExtractJsonData.OnD
         int newActive = (Integer.parseInt(data.get(0).getNewConfirmed())) - ((Integer.parseInt(data.get(0).getNewRecovered()))
                 + Integer.parseInt(data.get(0).getNewDeceased()));
         indiaNewActice.setText("+"+ NumberFormat.getInstance().format(newActive));
-
+        flag=true;
 
         data.remove(0);
 //        mJsonData.loadNewData(data);

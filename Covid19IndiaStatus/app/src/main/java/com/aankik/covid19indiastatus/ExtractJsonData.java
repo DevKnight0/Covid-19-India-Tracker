@@ -1,8 +1,10 @@
 package com.aankik.covid19indiastatus;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -55,14 +57,14 @@ interface OnDataAvaialabe {
     public void onDownloadComplete(String data) {
 
         mStateDataModel = new ArrayList<>();
+        if (data != null) {
+            try {
+                Log.d(TAG, "onDownloadComplete: data " + data);
+                JSONObject jsonData = new JSONObject(data);
+                JSONArray jsonArray = jsonData.getJSONArray("statewise");
 
-        try {
-            Log.d(TAG, "onDownloadComplete: data "+ data);
-            JSONObject jsonData = new JSONObject(data);
-            JSONArray jsonArray = jsonData.getJSONArray("statewise");
-
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject statewise = jsonArray.getJSONObject(i);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject statewise = jsonArray.getJSONObject(i);
 
                     String stateName = statewise.getString("state");
                     String stateConfirmed = statewise.getString("confirmed");
@@ -74,23 +76,25 @@ interface OnDataAvaialabe {
                     String stateNewDeceased = statewise.getString("deltadeaths");
                     String stateLastUpdate = statewise.getString("lastupdatedtime");
 
-                    mStateDataModel.add(new StateDataModel(stateName,stateConfirmed,stateActive,stateDeceased,stateNewConfirmed,stateNewRecovered,stateNewDeceased
-                                            ,stateLastUpdate,stateRecovered));
+                    mStateDataModel.add(new StateDataModel(stateName, stateConfirmed, stateActive, stateDeceased, stateNewConfirmed, stateNewRecovered, stateNewDeceased
+                            , stateLastUpdate, stateRecovered));
 
-                Log.d(TAG, "onDownloadComplete: Data is "+ mStateDataModel.toString());
+                    Log.d(TAG, "onDownloadComplete: Data is " + mStateDataModel.toString());
+
+                }
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
 
             }
 
 
 
-        } catch (JSONException e) {
-            e.printStackTrace();
-
+        } else{
+            Toast.makeText((Context) mCallBack,"No Internet",Toast.LENGTH_LONG).show();
         }
-
-
     }
-
     private String createUri(String search) {
         Log.d(TAG, "createURL: "+ search);
         return Uri.parse(search).buildUpon()
