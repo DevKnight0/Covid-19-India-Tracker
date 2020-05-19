@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Covid19 India Status</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_front_view">FrontView</string>
+    <string name="title_activity_per_state_data">PerStateData</string>
+</resources>
